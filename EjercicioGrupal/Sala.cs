@@ -6,6 +6,18 @@ using System.Threading.Tasks;
 
 namespace EjercicioGrupal
 {
+    public enum TipoEvento
+    {
+        Clase,
+        Conferencia,
+        Practica
+    }
+    public enum EstadoReserva
+    {
+        Pendiente,
+        Aprobada,
+        Rechazada
+    }
     public abstract class Sala
     {
         public string Nombre;
@@ -13,6 +25,7 @@ namespace EjercicioGrupal
         public string Ubicacion;
         public bool Reservada = false;
         public DateOnly? FechaReservada = null;
+        public EstadoReserva Estado = EstadoReserva.Pendiente;
 
         public Sala(string nombre, int capacidad, string ubicacion)
         {
@@ -20,7 +33,7 @@ namespace EjercicioGrupal
             Capacidad = capacidad;
             Ubicacion = ubicacion;
         }
-        public abstract void Reservar(DateOnly fecha, string organizador, int capacidadRequerida);
+        public abstract void Reservar(DateOnly fecha, string organizador, int capacidadRequerida, TipoEvento tipo);
     }
 
     public class SalaComun : Sala
@@ -28,35 +41,40 @@ namespace EjercicioGrupal
         public SalaComun(string nombre, string ubicacion) : base(nombre, 50, ubicacion)
         {
         }
-        public override void Reservar(DateOnly fecha, string organizador, int capacidadRequerida)
+        public override void Reservar(DateOnly fecha, string organizador, int capacidadRequerida, TipoEvento tipo)
         {
             if (FechaReservada.HasValue && FechaReservada.Value < DateOnly.FromDateTime(DateTime.Now))
             {
                 Reservada = false;
                 FechaReservada = null;
+                Estado = EstadoReserva.Pendiente;
                 return;
             }
 
             if (capacidadRequerida > Capacidad)
             {
+                Estado = EstadoReserva.Rechazada;
                 Console.WriteLine($"La sala {Nombre} solo tiene capacidad para {Capacidad} personas. \n");
                 return;
             }
 
             if (Reservada && FechaReservada == fecha)
             {
+                Estado = EstadoReserva.Rechazada;
                 Console.WriteLine($"La sala {Nombre} ya esta reservada para la fecha {FechaReservada.Value}. \n");
                 return;
             }
 
             if (fecha < DateOnly.FromDateTime(DateTime.Now))
             {
+                Estado = EstadoReserva.Rechazada;
                 Console.WriteLine($"La fecha {fecha} no es valida, debe ser una fecha futura. \n");
                 return;
             }
 
             Reservada = true;
             FechaReservada = fecha;
+            Estado = EstadoReserva.Aprobada;
             Console.WriteLine($"La sala {Nombre} ha sido reservada para la fecha {fecha} por {organizador}. \n");
         }
     }
@@ -70,28 +88,32 @@ namespace EjercicioGrupal
             TienePantalla = tienePantalla;
         }
 
-        public override void Reservar(DateOnly fecha, string organizador, int capacidadRequerida)
+        public override void Reservar(DateOnly fecha, string organizador, int capacidadRequerida, TipoEvento tipo)
         {
             if (FechaReservada.HasValue && FechaReservada.Value < DateOnly.FromDateTime(DateTime.Now))
             {
                 Reservada = false;
                 FechaReservada = null;
+                Estado = EstadoReserva.Pendiente;
                 return;
             }
 
             if (capacidadRequerida > Capacidad)
             {
+                Estado = EstadoReserva.Rechazada;
                 Console.WriteLine($"El auditorio {Nombre} solo tiene capacidad para {Capacidad} personas. \n");
                 return;
             }
 
                 if (Reservada && FechaReservada == fecha)
                 {
-                    Console.WriteLine($"El auditorio {Nombre} ya esta reservado para la fecha {FechaReservada.Value}. \n");
+                Estado = EstadoReserva.Rechazada;
+                Console.WriteLine($"El auditorio {Nombre} ya esta reservado para la fecha {FechaReservada.Value}. \n");
                     return;
                 }
             if (fecha < DateOnly.FromDateTime(DateTime.Now))
             {
+                Estado = EstadoReserva.Rechazada;
                 Console.WriteLine($"La fecha {fecha} no es valida, debe ser una fecha futura. \n");
                 return;
             }
@@ -102,6 +124,7 @@ namespace EjercicioGrupal
             }
             Reservada = true;
             FechaReservada = fecha;
+            Estado = EstadoReserva.Aprobada;
             Console.WriteLine($"El auditorio {Nombre} ha sido reservado para la fecha {fecha} por {organizador}. \n");
         }
     }
@@ -116,12 +139,13 @@ namespace EjercicioGrupal
                 TieneProyector = tieneProyector;
             }
 
-            public override void Reservar(DateOnly fecha, string organizador, int capacidadRequerida)
+            public override void Reservar(DateOnly fecha, string organizador, int capacidadRequerida, TipoEvento tipo)
             {
                 if (FechaReservada.HasValue && FechaReservada.Value < DateOnly.FromDateTime(DateTime.Now))
                 {
                     Reservada = false;
                     FechaReservada = null;
+                    Estado = EstadoReserva.Pendiente;
                     return;
                 }
 
@@ -132,13 +156,15 @@ namespace EjercicioGrupal
         }
                     if (Reservada && FechaReservada == fecha)
                 {
-                    Console.WriteLine($"El laboratorio {Nombre} ya esta reservado para la fecha {FechaReservada.Value}. \n");
+                Estado = EstadoReserva.Rechazada;
+                Console.WriteLine($"El laboratorio {Nombre} ya esta reservado para la fecha {FechaReservada.Value}. \n");
                     return;
                 }
 
                   if (fecha < DateOnly.FromDateTime(DateTime.Now))
                 {
-                    Console.WriteLine($"El laboratorio {fecha} no es valida, debe ser una fecha futura. \n");
+                Estado = EstadoReserva.Rechazada;
+                Console.WriteLine($"El laboratorio {fecha} no es valida, debe ser una fecha futura. \n");
                     return;
                 }
                 if (TieneComputadoras && TieneProyector)
@@ -160,7 +186,8 @@ namespace EjercicioGrupal
 
                     Reservada = true;
                 FechaReservada = fecha;
-                Console.WriteLine($"El laboratorio {Nombre} ha sido reservado para la fecha {fecha} por {organizador}. \n");
+            Estado = EstadoReserva.Aprobada;
+            Console.WriteLine($"El laboratorio {Nombre} ha sido reservado para la fecha {fecha} por {organizador}. \n");
             }
         }
 }
